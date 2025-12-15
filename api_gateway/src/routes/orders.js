@@ -35,6 +35,9 @@ router.get('/', async (req, res) => {
 
 router.post('/', async (req, res) => {
   const created = await ordersClient.create(req.body);
+  if (created?.error) {
+    return res.status(500).json(created);
+  }
   await invalidate([ORDERS_ALL_KEY, ordersByUserKey(req.body.userId)]);
   res.status(201).json(created);
 });
@@ -42,12 +45,16 @@ router.post('/', async (req, res) => {
 router.put('/:orderId', async (req, res) => {
   const updated = await ordersClient.update(req.params.orderId, req.body);
   if (updated?.error === 'Order not found') return res.status(404).json(updated);
+  if (updated?.error) return res.status(500).json(updated);
   await invalidate([ORDERS_ALL_KEY, orderByIdKey(req.params.orderId), ordersByUserKey(updated.userId)]);
   res.json(updated);
 });
 
 router.delete('/:orderId', async (req, res) => {
   const removed = await ordersClient.remove(req.params.orderId);
+  if (removed?.error) {
+    return res.status(404).json(removed);
+  }
   await invalidate([ORDERS_ALL_KEY, orderByIdKey(req.params.orderId)]);
   res.json(removed);
 });
