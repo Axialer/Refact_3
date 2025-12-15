@@ -1,9 +1,9 @@
 const { Sequelize } = require('sequelize');
 
 const {
-  DB_HOST = 'postgres',
+  DB_HOST = 'db_reviews',
   DB_PORT = 5432,
-  DB_NAME = 'app_db',
+  DB_NAME = 'reviews_db',
   DB_USER = 'postgres',
   DB_PASSWORD = 'postgres',
 } = process.env;
