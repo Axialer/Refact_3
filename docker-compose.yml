@@ -5,6 +5,10 @@ services:
       - "8000:8000"
     environment:
       - NODE_ENV=production
+      - USERS_SERVICE_URL=http://service_users:8000
+      - ORDERS_SERVICE_URL=http://service_orders:8000
+      - REVIEWS_SERVICE_URL=http://service_reviews:8000
+      - REDIS_HOST=redis
     networks:
       - app-network
 
@@ -12,6 +16,25 @@ services:
     build: service_users
     environment:
       - NODE_ENV=production
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=app_db
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - REDIS_HOST=redis
+    networks:
+      - app-network
+
+  service_reviews:
+    build: service_reviews
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=app_db
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - REDIS_HOST=redis
     networks:
       - app-network
 
@@ -19,9 +42,34 @@ services:
     build: service_orders
     environment:
       - NODE_ENV=production
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=app_db
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - REDIS_HOST=redis
+    networks:
+      - app-network
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=app_db
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  redis:
+    image: redis:7-alpine
     networks:
       - app-network
 
 networks:
   app-network:
     driver: bridge
+
+volumes:
+  pgdata:
