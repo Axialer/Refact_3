@@ -9,6 +9,11 @@ services:
       - ORDERS_SERVICE_URL=http://service_orders:8000
       - REVIEWS_SERVICE_URL=http://service_reviews:8000
       - REDIS_HOST=redis
+    depends_on:
+      - redis
+      - service_users
+      - service_orders
+      - service_reviews
     networks:
       - app-network
 
@@ -16,12 +21,15 @@ services:
     build: service_users
     environment:
       - NODE_ENV=production
-      - DB_HOST=postgres
+      - DB_HOST=db_users
       - DB_PORT=5432
-      - DB_NAME=app_db
+      - DB_NAME=users_db
       - DB_USER=postgres
       - DB_PASSWORD=postgres
       - REDIS_HOST=redis
+    depends_on:
+      - db_users
+      - redis
     networks:
       - app-network
 
@@ -29,12 +37,15 @@ services:
     build: service_reviews
     environment:
       - NODE_ENV=production
-      - DB_HOST=postgres
+      - DB_HOST=db_reviews
       - DB_PORT=5432
-      - DB_NAME=app_db
+      - DB_NAME=reviews_db
       - DB_USER=postgres
       - DB_PASSWORD=postgres
       - REDIS_HOST=redis
+    depends_on:
+      - db_reviews
+      - redis
     networks:
       - app-network
 
@@ -42,23 +53,48 @@ services:
     build: service_orders
     environment:
       - NODE_ENV=production
-      - DB_HOST=postgres
+      - DB_HOST=db_orders
       - DB_PORT=5432
-      - DB_NAME=app_db
+      - DB_NAME=orders_db
       - DB_USER=postgres
       - DB_PASSWORD=postgres
       - REDIS_HOST=redis
+    depends_on:
+      - db_orders
+      - redis
     networks:
       - app-network
 
-  postgres:
+  db_users:
     image: postgres:15-alpine
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=app_db
+      - POSTGRES_DB=users_db
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata_users:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  db_orders:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=orders_db
+    volumes:
+      - pgdata_orders:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  db_reviews:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=reviews_db
+    volumes:
+      - pgdata_reviews:/var/lib/postgresql/data
     networks:
       - app-network
 
@@ -72,4 +108,6 @@ networks:
     driver: bridge
 
 volumes:
-  pgdata:
+  pgdata_users:
+  pgdata_orders:
+  pgdata_reviews:

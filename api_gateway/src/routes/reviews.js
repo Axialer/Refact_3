@@ -51,6 +51,9 @@ router.post('/reviews', async (req, res) => {
   if (created?.error === 'Review already exists for this order') {
     return res.status(409).json(created);
   }
+  if (created?.error) {
+    return res.status(500).json(created);
+  }
   await invalidate([
     REVIEWS_ALL_KEY,
     reviewsByProductKey(req.body.product),
@@ -64,6 +67,7 @@ router.post('/reviews', async (req, res) => {
 router.put('/reviews/:id', async (req, res) => {
   const updated = await reviewsClient.update(req.params.id, req.body);
   if (updated?.error === 'Review not found') return res.status(404).json(updated);
+  if (updated?.error) return res.status(500).json(updated);
   await invalidate([
     REVIEWS_ALL_KEY,
     reviewsByProductKey(updated.product),
@@ -77,6 +81,7 @@ router.put('/reviews/:id', async (req, res) => {
 router.delete('/reviews/:id', async (req, res) => {
   const removed = await reviewsClient.remove(req.params.id);
   if (removed?.error === 'Review not found') return res.status(404).json(removed);
+  if (removed?.error) return res.status(500).json(removed);
   await invalidate([
     REVIEWS_ALL_KEY,
     reviewsByProductKey(removed.product),
