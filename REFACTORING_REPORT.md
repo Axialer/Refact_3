@@ -488,6 +488,18 @@ async function list(product) {
   return withCache(REVIEWS_ALL_KEY, 30, async () => Review.findAll());
 }
 
+// Получение отзыва по ID с кэшированием
+async function getById(id) {
+  return withCache(reviewByIdKey(id), 30, async () => Review.findByPk(id));
+}
+
+// Получение отзыва по заказу с кэшированием
+async function getByOrder(orderId) {
+  return withCache(reviewByOrderKey(orderId), 30, async () => 
+    Review.findOne({ where: { orderId } })
+  );
+}
+
 // Создание отзыва с проверкой уникальности и инвалидацией кэша
 async function create(payload) {
   // проверяем, что на заказ уже нет отзыва
@@ -768,7 +780,8 @@ async function ensureMigrationsTable(queryInterface) {
       runOn: { type: DataTypes.DATE, allowNull: false },
     });
   } catch (error) {
-    if (error.original?.code !== '42P07') {  // игнорируем "таблица уже существует"
+    // PostgreSQL error codes: 42P07 = "таблица уже существует"
+    if (error.original?.code !== '42P07') {
       throw error;
     }
   }
@@ -782,7 +795,8 @@ async function getAppliedMigrations(queryInterface) {
     );
     return rows.map((row) => row.name);
   } catch (error) {
-    if (error.original?.code === '42P01') return [];  // таблица не существует
+    // PostgreSQL error codes: 42P01 = "таблица не существует"
+    if (error.original?.code === '42P01') return [];
     throw error;
   }
 }
